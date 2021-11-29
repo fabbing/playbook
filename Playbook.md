@@ -11,13 +11,19 @@ maintenance set dwarf unwinders off
 A python script giving a nice UI to GDB that allows to exceed the 2 windows
 limit (asm/regs/src) of the native TUI interace: [Github wiki](https://github.com/cyrus-and/gdb-dashboard/wiki)
 
+#### Installation
 ```
 sudo pacman -Syu gdb-dashboard
 ln -s /usr/share/gdb-dashboard/.gdbinit .gdbinit
 ```
 
+#### Documentation
 ```
 help dashboard
+```
+
+#### Setup
+```
 dashboard -enabled on
 ```
 
