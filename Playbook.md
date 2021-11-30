@@ -1,5 +1,15 @@
 # Support for frame-pointer
 
+## OCaml
+
+### Disable inlining
+[Language extensions / Attributes](https://ocaml.org/manual/attributes.html)
+
+```ocaml
+let [@inline never] foo () =
+	...
+```
+
 ## GDB
 
 ### Disable DWARF frame unwinding
@@ -8,32 +18,51 @@
 maintenance set dwarf unwinders off
 ```
 
-### User-defined commands
+### Custom user-defined commands
 
-Print saved RBP & RIP and optionally current stack local variables.
+Walk the stack using frame pointers and print saved RIP and RBP.
 ```
+define print_frame
+    set $pf_base = $rbp
+
+    if $argc == 1
+        set $pf_base = $arg0
+    end
+
+    set $pf_prev_rip = $pf_base + 8
+    set $pf_prev_rbp = $pf_base
+
+    printf "saved rip @ %#016x is ", $pf_prev_rip
+    output *(void**)($pf_prev_rip)
+    printf "\n"
+
+    printf "saved rbp @ %#016x is %#016x\n", $pf_prev_rbp, *(void**)($pf_prev_rbp)
+end
+
 define print_stack
-    set $base = $rbp
-    set $size = 0
+    set $ps_base = $rbp
+    set $ps_size = ($rbp - $rsp) / 8
 
-    if $argc >= 1
-        set $base = $arg0
-    end
     if $argc == 2
-        set $size = $arg1
+        set $ps_base = $arg0
+        set $ps_size = $arg1
     end
 
-    #printf "Using base = 0x%0lx\n", $base
+    eval "x /%dgx %#lx", -($ps_size), $ps_base
+end
 
-    set $prev_rip = $base + 8
-    set $prev_rbp = $base
+define walk_stack
+    set $ws_base = $rbp
 
-    printf "previous rip @ %#016x is %#016x\n", $prev_rip, *(long*)($prev_rip)
-    printf "previous rbp @ %#016x is %#016x\n", $prev_rbp, *(long*)($prev_rbp)
-
-    if $size > 0
-        eval "x /%dgx %#lx", -($size), $base
+    if $argc == 1
+        set $ws_base = $arg0
     end
+
+    while $ws_base != 0
+        print_frame $ws_base
+        set $ws_base = *(void**)$ws_base
+    end
+end
 ```
 
 ## GDB dashboard
