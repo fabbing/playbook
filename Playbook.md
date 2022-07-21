@@ -23,6 +23,12 @@ maintenance set dwarf unwinders off
 Walking the stack using frame pointers and print saved RIP and RBP with
 [walk_stack](src/walk_stack.gdb)
 
+### Miscellaneous commands
+- Disassemble with intel syntax
+  ```
+  set disassembly-flavor intel
+  ```
+
 ## GDB dashboard
 A python script giving a nice UI to GDB that allows to exceed the 2 windows
 limit (asm/regs/src) of the native TUI interace: [Github wiki](https://github.com/cyrus-and/gdb-dashboard/wiki)
